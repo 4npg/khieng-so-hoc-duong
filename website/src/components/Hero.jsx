@@ -20,7 +20,7 @@ export default function Hero() {
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight">
               BẬT CHẾ ĐỘ AN TOÀN <br />
               <span className="bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 bg-clip-text text-transparent glow-text-cyan">
-                LÀM CHỦ KHÔNG GIANG SỐ
+                LÀM CHỦ KHÔNG GIAN SỐ
               </span>
             </h1>
 
@@ -68,7 +68,13 @@ export default function Hero() {
                 <img
                   src="/assets/poster_main.jpg"
                   alt="Poster Khiên Số Học Đường"
+                  loading="lazy"
+                  width="600"
+                  height="750"
                   className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0a0d18] via-transparent to-transparent opacity-80"></div>
                 

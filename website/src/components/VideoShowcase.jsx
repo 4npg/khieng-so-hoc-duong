@@ -1,9 +1,15 @@
-import React, { useState } from 'react';
-import { Play, Pause, Film, Volume2, Sparkles, Clock, Clapperboard, FileText, CheckCircle2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Play, Pause, Film, Volume2, Sparkles, Clock, Clapperboard, FileText, CheckCircle2, RotateCcw } from 'lucide-react';
 
 export default function VideoShowcase() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [activeScene, setActiveScene] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const [videoError, setVideoError] = useState(false);
+  const [videoLoaded, setVideoLoaded] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(210);
+  const videoRef = React.useRef(null);
 
   const scenes = [
     {
@@ -26,7 +32,7 @@ export default function VideoShowcase() {
     },
     {
       id: 3,
-      time: "00:15 - 02:30",
+      time: "01:15 - 02:30",
       title: "Cảnh 3: Kích Hoạt Khiên Số & Bật 4 Không",
       desc: "Minh kịp nhớ lại bài giảng pháp luật, bấm nút 'Bật Chế Độ An Toàn', tắt máy và gọi lại số điện thoại di động chính thức của mẹ để kiểm chứng.",
       shot: "Góc quay rộng (Wide shot) hiệu ứng đồ họa 3D holographic 'Khiên Số' bảo vệ bọc quanh nhân vật.",
@@ -43,6 +49,81 @@ export default function VideoShowcase() {
       prompt: "Warm futuristic classroom scene, friendly female police officer in uniform and school teacher explaining cyber law on interactive digital smartboard to group of attentive high school students."
     }
   ];
+
+  // Auto playback animation effect (fallback when real video isn't playing)
+  const scenesLength = scenes.length;
+  useEffect(() => {
+    if (!isPlaying) return;
+    if (videoRef.current && !videoError) return;
+
+    const timer = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 100) {
+          setActiveScene((curr) => (curr + 1) % scenesLength);
+          return 0;
+        }
+        return prev + 2;
+      });
+    }, 100);
+    return () => clearInterval(timer);
+  }, [isPlaying, scenesLength, videoError]);
+
+  const handleTimeUpdate = () => {
+    if (!videoRef.current) return;
+    const cur = videoRef.current.currentTime;
+    const dur = videoRef.current.duration || 210;
+    setCurrentTime(cur);
+    setDuration(dur);
+    setProgress((cur / dur) * 100);
+
+    if (cur >= 0 && cur < 30) {
+      setActiveScene(0);
+    } else if (cur >= 30 && cur < 75) {
+      setActiveScene(1);
+    } else if (cur >= 75 && cur < 150) {
+      setActiveScene(2);
+    } else if (cur >= 150) {
+      setActiveScene(3);
+    }
+  };
+
+  const togglePlay = () => {
+    const nextPlaying = !isPlaying;
+    setIsPlaying(nextPlaying);
+    if (videoRef.current && !videoError) {
+      if (nextPlaying) {
+        videoRef.current.play().catch((err) => {
+          console.warn("Real video playback failed, using simulation:", err);
+          setVideoError(true);
+        });
+      } else {
+        videoRef.current.pause();
+      }
+    }
+  };
+
+  const handleSceneClick = (idx) => {
+    setActiveScene(idx);
+    const times = [0, 30, 75, 150];
+    if (videoRef.current && !videoError) {
+      videoRef.current.currentTime = times[idx];
+      if (isPlaying) {
+        videoRef.current.play().catch(() => {});
+      }
+    } else {
+      setProgress(0);
+    }
+  };
+
+  const handleReset = () => {
+    setProgress(0);
+    setIsPlaying(false);
+    setCurrentTime(0);
+    if (videoRef.current && !videoError) {
+      videoRef.current.currentTime = 0;
+      videoRef.current.pause();
+    }
+  };
 
   return (
     <section id="video" className="py-20 bg-[#0c1020] border-t border-b border-slate-800/80">
@@ -68,62 +149,121 @@ export default function VideoShowcase() {
           <div className="lg:col-span-8">
             <div className="relative rounded-2xl overflow-hidden glass-panel border border-purple-500/30 shadow-2xl bg-black group">
               
-              {/* Fake Video Screen Screen */}
-              <div className="relative aspect-video flex items-center justify-center bg-gradient-to-br from-slate-950 via-[#101426] to-slate-900">
-                <div className="absolute inset-0 bg-cyber-grid opacity-30"></div>
+              {/* Animated Screen Preview */}
+              <div className="relative aspect-video flex items-center justify-center bg-gradient-to-br from-slate-950 via-[#101426] to-slate-900 overflow-hidden">
+                {!videoError && (
+                  <video
+                    ref={videoRef}
+                    src="/assets/final_khieng_so_campaign_video.mp4"
+                    className="absolute inset-0 w-full h-full object-cover"
+                    onTimeUpdate={handleTimeUpdate}
+                    onEnded={() => setIsPlaying(false)}
+                    onError={() => setVideoError(true)}
+                    onCanPlay={() => setVideoLoaded(true)}
+                    preload="auto"
+                    playsInline
+                  >
+                    <track
+                      kind="subtitles"
+                      src="/assets/subtitles.vtt"
+                      srcLang="vi"
+                      label="Tiếng Việt"
+                      default
+                    />
+                  </video>
+                )}
+
+                {/* Cyber Grid background when not showing video */}
+                {(!videoLoaded || videoError) && (
+                  <div className={`absolute inset-0 bg-cyber-grid transition-opacity duration-500 ${isPlaying ? 'opacity-60 animate-pulse' : 'opacity-30'}`}></div>
+                )}
                 
-                {/* Scene visual backdrop preview */}
-                <div className="absolute inset-0 flex flex-col justify-between p-6">
-                  <div className="flex justify-between items-center">
-                    <span className="px-3 py-1 rounded-full bg-slate-900/80 text-cyan-400 text-xs font-mono font-bold border border-cyan-500/30">
-                      VEO 3 SCENE #{scenes[activeScene].id} • {scenes[activeScene].time}
+                {isPlaying && (!videoLoaded || videoError) && (
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-500/10 to-transparent h-20 animate-bounce pointer-events-none"></div>
+                )}
+
+                {/* Visual Overlays */}
+                <div className="absolute inset-0 flex flex-col justify-between p-6 bg-gradient-to-t from-black/80 via-transparent to-black/60 pointer-events-none">
+                  <div className="flex justify-between items-center z-10">
+                    <span className="px-3 py-1 rounded-full bg-slate-900/90 text-cyan-400 text-xs font-mono font-bold border border-cyan-500/30">
+                      {!videoError && videoLoaded ? 'PLAYING OFFICIAL CAMPAIGN VIDEO' : `VEO 3 SCENE #${scenes[activeScene].id} • ${scenes[activeScene].time}`}
                     </span>
-                    <span className="px-2.5 py-1 rounded bg-purple-950/80 text-purple-300 text-xs font-medium">
-                      HD 1080P • 60 FPS
-                    </span>
+                    <div className="flex items-center gap-2">
+                      {isPlaying && (
+                        <span className="flex items-center gap-1 text-[11px] font-bold text-rose-400 animate-pulse bg-rose-950/80 px-2 py-0.5 rounded border border-rose-800">
+                          <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span> LIVE SIMULATION
+                        </span>
+                      )}
+                      <span className="px-2.5 py-1 rounded bg-purple-950/80 text-purple-300 text-xs font-medium">
+                        HD 1080P • 60 FPS
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="text-center px-4 py-8 max-w-xl mx-auto glass-panel rounded-xl border border-purple-500/20 my-auto">
-                    <Sparkles className="w-8 h-8 text-cyan-400 mx-auto mb-2 animate-bounce" />
-                    <h3 className="text-lg sm:text-xl font-bold text-white mb-2">
-                      {scenes[activeScene].title}
-                    </h3>
-                    <p className="text-xs sm:text-sm text-slate-300">
-                      "{scenes[activeScene].desc}"
-                    </p>
-                  </div>
+                  {(!videoLoaded || videoError || !isPlaying) && (
+                    <div className="text-center px-4 py-6 max-w-xl mx-auto glass-panel rounded-xl border border-purple-500/30 my-auto z-10">
+                      <Sparkles className="w-8 h-8 text-cyan-400 mx-auto mb-2 animate-spin" style={{ animationDuration: isPlaying ? '3s' : '10s' }} />
+                      <h3 className="text-lg sm:text-xl font-bold text-white mb-2">
+                        {scenes[activeScene].title}
+                      </h3>
+                      <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                        &ldquo;{scenes[activeScene].desc}&rdquo;
+                      </p>
+                    </div>
+                  )}
 
-                  <div className="flex items-center justify-between text-xs text-slate-400">
-                    <span className="flex items-center gap-1"><Volume2 className="w-4 h-4 text-emerald-400" /> ElevenLabs Voice: Nam Miền Bắc Thuyết Minh</span>
-                    <span className="font-mono">03:45 / 04:30</span>
+                  <div className="flex items-center justify-between text-xs text-slate-400 z-10">
+                    <span className="flex items-center gap-1 text-cyan-300"><Volume2 className="w-4 h-4 text-emerald-400" /> ElevenLabs Voice: Nam Miền Bắc Thuyết Minh</span>
+                    <span className="font-mono">
+                      {!videoError && videoLoaded
+                        ? `${Math.round(currentTime)}s / ${Math.round(duration)}s`
+                        : `${Math.round(progress)}% Hoàn Tất Cảnh`
+                      }
+                    </span>
                   </div>
                 </div>
 
-                {/* Big Play Button */}
+                {/* Big Play / Pause Overlay Button */}
                 <button
-                  onClick={() => setIsPlaying(!isPlaying)}
+                  onClick={togglePlay}
+                  aria-label={isPlaying ? 'Dừng xem' : 'Phát đoạn phim'}
                   className="z-20 w-16 h-16 rounded-full bg-gradient-to-tr from-cyan-500 to-purple-500 text-slate-950 flex items-center justify-center shadow-glow-blue hover:scale-110 active:scale-95 transition-all"
                 >
                   {isPlaying ? <Pause className="w-8 h-8 fill-slate-950" /> : <Play className="w-8 h-8 fill-slate-950 ml-1" />}
                 </button>
               </div>
 
+              {/* Interactive Progress Bar */}
+              <div className="w-full bg-slate-900 h-1.5 relative overflow-hidden">
+                <div
+                  className="bg-gradient-to-r from-cyan-400 via-teal-300 to-purple-500 h-full transition-all duration-150"
+                  style={{ width: `${progress}%` }}
+                ></div>
+              </div>
+
               {/* Player Control Bar */}
-              <div className="p-4 bg-slate-950 border-t border-slate-800 flex items-center justify-between">
+              <div className="p-4 bg-slate-950 border-t border-slate-800 flex flex-wrap items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <button
-                    onClick={() => setIsPlaying(!isPlaying)}
+                    onClick={togglePlay}
                     className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200"
                   >
                     {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                   </button>
-                  <span className="text-xs font-mono text-slate-400">Timeline Scene Interactive Player</span>
+                  <button
+                    onClick={handleReset}
+                    className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white"
+                    title="Reset Timeline"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                  </button>
+                  <span className="text-xs font-mono text-slate-400 hidden sm:inline-block">Timeline Storyboard Player</span>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-1.5 flex-wrap">
                   {scenes.map((s, idx) => (
                     <button
                       key={s.id}
-                      onClick={() => setActiveScene(idx)}
+                      onClick={() => handleSceneClick(idx)}
                       className={`px-3 py-1 rounded text-xs font-semibold transition-all ${
                         activeScene === idx
                           ? 'bg-cyan-500 text-slate-950 shadow-glow-blue'

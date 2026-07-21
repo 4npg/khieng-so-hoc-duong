@@ -39,7 +39,11 @@ export default function ScamAlertsInfographic() {
           <img
             src="/assets/infographic_banner.jpg"
             alt="Infographic Cảnh Báo Lừa Đảo Mạng"
+            loading="lazy"
             className="w-full h-auto max-h-[350px] object-cover"
+            onError={(e) => {
+              e.currentTarget.parentElement.style.display = 'none';
+            }}
           />
         </div>
 

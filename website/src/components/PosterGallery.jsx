@@ -79,7 +79,13 @@ export default function PosterGallery() {
               <img
                 src={currentAsset.image}
                 alt={currentAsset.title}
+                loading="lazy"
                 className="w-full h-auto rounded-xl object-cover"
+                onError={(e) => {
+                  e.currentTarget.alt = 'Hình ảnh chưa được tạo';
+                  e.currentTarget.style.minHeight = '200px';
+                  e.currentTarget.style.background = 'rgba(18,24,41,0.8)';
+                }}
               />
               <div className="mt-3 flex items-center justify-between px-2">
                 <span className="text-xs text-slate-400 font-mono">{currentAsset.specs}</span>

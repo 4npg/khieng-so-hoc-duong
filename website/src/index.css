@@ -2,29 +2,53 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Smooth anchor-scroll offset so fixed navbar doesn't cover headings ─── */
 @layer base {
   body {
     @apply bg-[#0a0d18] text-slate-100 font-sans antialiased overflow-x-hidden;
+    scroll-behavior: smooth;
+  }
+
+  /* Offset scroll target so fixed navbar (h-16 = 4rem) doesn't obscure headings */
+  :target {
+    scroll-margin-top: 5rem;
+  }
+
+  /* Better focus ring for accessibility */
+  :focus-visible {
+    @apply outline-none ring-2 ring-cyan-400 ring-offset-2 ring-offset-[#0a0d18];
   }
 }
 
+/* ─── Typography Glow Effects ─── */
 .glow-text-cyan {
-  text-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
+  text-shadow: 0 0 20px rgba(0, 240, 255, 0.55), 0 0 40px rgba(0, 240, 255, 0.2);
 }
 
 .glow-text-emerald {
-  text-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+  text-shadow: 0 0 20px rgba(16, 185, 129, 0.55), 0 0 40px rgba(16, 185, 129, 0.2);
 }
 
+/* ─── Cyber Grid Background ─── */
+/* Used as .cyber-grid on section elements */
 .cyber-grid {
   background-size: 40px 40px;
-  background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
 }
 
+/* Used as CSS class bg-cyber-grid (referenced in VideoShowcase.jsx) */
+.bg-cyber-grid {
+  background-size: 40px 40px;
+  background-image:
+    linear-gradient(to right, rgba(0, 240, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 240, 255, 0.06) 1px, transparent 1px);
+}
+
+/* ─── Glassmorphism ─── */
 .glass-panel {
-  background: rgba(18, 24, 41, 0.7);
+  background: rgba(18, 24, 41, 0.72);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -36,5 +60,35 @@
 .glass-panel-hover:hover {
   border-color: rgba(0, 240, 255, 0.3);
   transform: translateY(-2px);
-  box-shadow: 0 10px 30px -10px rgba(0, 240, 255, 0.15);
+  box-shadow: 0 10px 30px -10px rgba(0, 240, 255, 0.18);
+}
+
+/* ─── Glow Shadow Utilities (used in JSX via className) ─── */
+/* These mirror tailwind.config.js boxShadow extensions for use as plain CSS */
+.shadow-glow-blue {
+  box-shadow: 0 0 25px rgba(0, 240, 255, 0.28);
+}
+
+.shadow-glow-emerald {
+  box-shadow: 0 0 25px rgba(16, 185, 129, 0.28);
+}
+
+.shadow-glow-purple {
+  box-shadow: 0 0 25px rgba(139, 92, 246, 0.28);
+}
+
+/* ─── Scrollbar Styling (Chromium only) ─── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0d18;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 240, 255, 0.25);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 240, 255, 0.5);
 }

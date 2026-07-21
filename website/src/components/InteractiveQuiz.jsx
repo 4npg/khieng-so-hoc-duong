@@ -154,8 +154,23 @@ export default function InteractiveQuiz() {
 
               <div>
                 <h3 className="text-2xl font-black text-white">HOÀN THÀNH BÀI THỬ THÁCH!</h3>
-                <p className="text-slate-300 text-sm mt-1">
+                <p className="text-slate-300 text-sm mt-1" aria-live="polite">
                   Bạn đã trả lời đúng <strong className="text-cyan-400 text-lg">{score} / {quizQuestions.length}</strong> câu hỏi.
+                </p>
+                <p
+                  className={`mt-1 text-sm font-semibold ${
+                    score === quizQuestions.length
+                      ? 'text-emerald-400'
+                      : score >= Math.ceil(quizQuestions.length / 2)
+                      ? 'text-amber-400'
+                      : 'text-rose-400'
+                  }`}
+                >
+                  {score === quizQuestions.length
+                    ? '🏆 Xuất sắc! Bạn đã nắm vững toàn bộ kiến thức an toàn mạng!'
+                    : score >= Math.ceil(quizQuestions.length / 2)
+                    ? '👍 Tốt! Hãy ôn thêm các kiến thức còn thiếu để bảo vệ bản thân tốt hơn.'
+                    : '📚 Hãy học thêm về Luật An ninh mạng 2018 và quy tắc 4 KHÔNG - 3 NÊN nhé!'}
                 </p>
               </div>
 

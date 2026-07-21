@@ -3,7 +3,11 @@ Prompt Engine Module for Campaign Asset Generation
 Supports Flux, Midjourney, DALL-E 3, Veo 3, Kling AI, and ElevenLabs.
 """
 
+import sys
 import json
+
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
 
 class CampaignPromptEngine:
     def __init__(self, campaign_theme="Preventing Online Scams & Data Protection for High Schoolers"):

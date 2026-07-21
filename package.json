@@ -1,9 +1,13 @@
 {
   "name": "khieng-so-hoc-duong",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "private": true,
+  "workspaces": [
+    "website"
+  ],
   "scripts": {
+    "build": "npm run build --workspace=website",
+    "dev": "npm run dev --workspace=website",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
